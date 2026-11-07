@@ -123,6 +123,7 @@
     document.title = `${LV} ${meta.name} ${isWrong?'오답노트':'세트 '+n} · 1500 Preguntas`;
     if(!qs.length){ app.innerHTML=`<div class="empty wrap">오답노트가 비어 있습니다 🎉<br><br><a class="btn" href="#">← 처음으로</a></div>`; $('#dock').style.display='none'; return; }
     const [a,b]=setRange(n||1);
+    if(ST.mode==='exam' && !Q.graded) return renderSingle();
     let html=`<section class="wrap"><div class="qhead">
       <div><div class="crumb"><a href="#">${LV} 홈</a> › ${meta.name} (${meta.es})</div>
       <h1>${isWrong?'오답노트 · '+qs.length+'문항':'세트 '+n+' <small style="font-size:15px;color:var(--muted);font-weight:500">'+a+'–'+b+'번</small>'}</h1></div>
@@ -139,12 +140,66 @@
     }
     html+=`</section>`;
     app.innerHTML=html; window.scrollTo(0,0);
-    app.querySelectorAll('.mode button').forEach(bt=>bt.onclick=()=>{ ST.mode=bt.dataset.m; save(ST); app.querySelectorAll('.mode button').forEach(x=>x.classList.toggle('on',x===bt)); });
+    bindMode();
     app.querySelectorAll('.qcard').forEach(el=>bindCard(el));
     if(Q.graded) qs.forEach(q=>reveal(q.id));
     else if(ST.mode==='instant') qs.forEach(q=>{ if(Q.answers[q.id]!=null) reveal(q.id); });
     dock();
   }
+
+  function bindMode(){
+    app.querySelectorAll('.mode button').forEach(bt=>bt.onclick=()=>{ if(ST.mode===bt.dataset.m) return; ST.mode=bt.dataset.m; save(ST); renderQuiz(); });
+  }
+  function headHTML(){
+    const {s,n,qs,isWrong}=Q, meta=SECS[s], [a,b]=setRange(n||1);
+    return `<div class="qhead">
+      <div><div class="crumb"><a href="#">${LV} 홈</a> › ${meta.name} (${meta.es})</div>
+      <h1>${isWrong?'오답노트 · '+qs.length+'문항':'세트 '+n+' <small style="font-size:15px;color:var(--muted);font-weight:500">'+a+'–'+b+'번</small>'}</h1></div>
+      <div class="right">
+        <div class="mode"><button data-m="exam" class="${ST.mode==='exam'?'on':''}">시험 모드</button><button data-m="instant" class="${ST.mode==='instant'?'on':''}">바로 확인</button></div>
+      </div></div>`;
+  }
+  /* exam mode: one question per screen, auto-advance */
+  function renderSingle(){
+    const {qs}=Q, total=qs.length;
+    if(Q.cur==null||Q.cur>=total){ const f=qs.findIndex(q=>Q.answers[q.id]==null); Q.cur=f<0?0:f; }
+    const i=Q.cur, q=qs[i], sel=Q.answers[q.id];
+    const answered=qs.filter(x=>Q.answers[x.id]!=null).length;
+    app.innerHTML=`<section class="wrap">${headHTML()}
+      <div class="tprog"><i style="width:${answered/total*100}%"></i></div>
+      <div class="tcard">
+        <div class="tmeta"><span class="no">문항 ${i+1} / ${total}</span><span class="pill">${q.id.slice(1)}번</span></div>
+        <div class="tq">${stemHTML(q, sel!=null?`<span class="blank">${esc(q.o[sel])}</span>`:null)}</div>
+        <div class="opts">${q.o.map((o,k)=>`<button class="opt ${sel===k?'sel':''}" data-k="${k}"><span class="L">${L[k]}</span><span>${optTxt(o)}</span><span class="k">${k+1}</span></button>`).join('')}</div>
+      </div>
+      <div class="tnav"><button class="btn" id="pv" ${i===0?'disabled':''}>← 이전</button>
+        ${i<total-1?`<button class="btn dark" id="nx">다음 →</button>`:`<button class="btn primary" id="sb">채점하기</button>`}</div>
+      <div class="tgrid">${qs.map((x,j)=>`<button data-j="${j}" class="${Q.answers[x.id]!=null?'a':''} ${j===i?'cur':''}">${x.id.slice(1)}</button>`).join('')}</div>
+      ${!Q.isWrong?`<div style="display:flex;gap:8px;justify-content:space-between;margin:-90px 0 120px">
+        ${Q.n>1?`<a class="btn" href="#${Q.s}${Q.n-1}">← 세트 ${Q.n-1}</a>`:'<span></span>'}
+        ${Q.n<15?`<a class="btn" href="#${Q.s}${Q.n+1}">세트 ${Q.n+1} →</a>`:'<span></span>'}</div>`:''}
+    </section>`;
+    bindMode();
+    app.querySelectorAll('.tcard .opt').forEach(b=>b.onclick=()=>chooseSingle(+b.dataset.k));
+    app.querySelectorAll('.tgrid button').forEach(b=>b.onclick=()=>{ Q.cur=+b.dataset.j; renderSingle(); });
+    $('#pv').onclick=()=>{ if(Q.cur>0){ Q.cur--; renderSingle(); } };
+    const nx=$('#nx'); if(nx) nx.onclick=()=>{ Q.cur++; renderSingle(); };
+    const sb=$('#sb'); if(sb) sb.onclick=grade;
+    dock();
+  }
+  function chooseSingle(k){
+    const q=Q.qs[Q.cur]; Q.answers[q.id]=k; persist();
+    renderSingle();
+    if(Q.cur<Q.qs.length-1){ const at=Q.cur; setTimeout(()=>{ if(Q && !Q.graded && Q.cur===at && ST.mode==='exam'){ Q.cur++; renderSingle(); } },260); }
+  }
+  document.addEventListener('keydown',e=>{
+    if(!Q||Q.graded||ST.mode!=='exam'||!document.querySelector('.tcard')) return;
+    if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+    const m={'1':0,'2':1,'3':2,'4':3,'a':0,'b':1,'c':2,'d':3}[e.key.toLowerCase()];
+    if(m!=null){ e.preventDefault(); chooseSingle(m); }
+    else if(e.key==='ArrowRight' && Q.cur<Q.qs.length-1){ Q.cur++; renderSingle(); }
+    else if(e.key==='ArrowLeft' && Q.cur>0){ Q.cur--; renderSingle(); }
+  });
   function stemHTML(q, filled){
     let t=esc(q.q);
     return t.replace(/____/g, ()=> filled||'<span class="blank">&nbsp;</span>');
@@ -207,6 +262,7 @@
         ${Q.graded?`<button class="btn" id="retry">다시 풀기</button><button class="btn dark" id="result">결과 보기</button>`
                   :`<button class="btn primary" id="grade">채점하기</button>`}
       </div>`;
+    if(document.querySelector('.tcard')) { const j=d.querySelector('.jump'); if(j) j.remove(); }
     d.querySelectorAll('.jump a').forEach(a=>a.onclick=e=>{ e.preventDefault(); document.getElementById('q-'+a.dataset.j).scrollIntoView({behavior:'smooth'}); });
     const g=$('#grade'); if(g) g.onclick=grade;
     const r=$('#retry'); if(r) r.onclick=retry;
@@ -216,6 +272,7 @@
     const total=Q.qs.length, ans=Q.qs.filter(q=>Q.answers[q.id]!=null).length;
     if(ans<total && !confirm(`아직 ${total-ans}문항을 풀지 않았습니다. 그래도 채점할까요?\n(안 푼 문항은 오답 처리됩니다)`)) return;
     Q.graded=true;
+    if(document.querySelector('.tcard')) renderQuiz();
     let correct=0;
     Q.qs.forEach(q=>{ const k=Q.answers[q.id]; if(isOk(q,k)) correct++; markWrong(q, k==null?-1:k); reveal(q.id); });
     if(!Q.isWrong){
@@ -224,7 +281,7 @@
     dock(); showResult();
   }
   function retry(onlyWrong){
-    Q.answers={}; Q.graded=false;
+    Q.answers={}; Q.graded=false; Q.cur=0;
     if(!Q.isWrong){ const r=ST.sets[Q.key]||{}; r.answers={}; r.graded=false; ST.sets[Q.key]=r; save(ST); }
     renderQuiz();
   }

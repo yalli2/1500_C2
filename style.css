@@ -163,3 +163,27 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 @media (max-width:420px){.sets{grid-template-columns:repeat(3,1fr)}}
 .lvsel{display:none;margin-left:auto;border:1px solid var(--line);border-radius:9px;padding:6px 8px;background:#fff;font-weight:700}
 @media (max-width:760px){.lvsel{display:block}.brand .tt small{display:none}}
+
+/* exam mode: one question per screen */
+.tbar{display:flex;align-items:center;gap:12px;padding:20px 0 6px;flex-wrap:wrap}
+.tbar h1{margin:0;font-size:22px}
+.tbar .timer{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700;background:#fff;border:1px solid var(--line);border-radius:9px;padding:5px 10px;font-size:14px}
+.tprog{height:8px;background:#f1ebe2;border-radius:99px;overflow:hidden;margin:6px 0 16px}
+.tprog i{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--gold));transition:width .25s}
+.tcard{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:26px;box-shadow:var(--shadow);min-height:330px}
+.tmeta{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.tmeta .no{font-weight:800;font-size:15px}
+.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:2px 10px;background:var(--bg);border:1px solid var(--line);color:var(--muted)}
+.tq{font-size:21px;line-height:1.55;margin:4px 0 20px}
+.tcard .opts{margin:0;gap:10px}
+.tcard .opt{font-size:17px;padding:12px 14px}
+.tcard .opt .k{margin-left:auto;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 5px}
+.tnav{display:flex;gap:8px;justify-content:space-between;margin:16px 0}
+.tgrid{display:grid;grid-template-columns:repeat(15,1fr);gap:5px;margin:4px 0 110px}
+.tgrid button{height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:700;color:var(--muted)}
+.tgrid button.a{background:var(--blue-soft);border-color:#b6c9ef;color:var(--blue)}
+.tgrid button.cur{outline:2px solid var(--ink);outline-offset:1px}
+.tgrid .lab{grid-column:1/-1;font-size:12px;color:var(--muted);font-weight:700;margin-top:6px}
+
+@media (max-width:760px){.tgrid{grid-template-columns:repeat(10,1fr)}.tq{font-size:18.5px}.tcard{padding:18px}.tcard .opt .k{display:none}}
+.tgrid{grid-template-columns:repeat(10,1fr)}
