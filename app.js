@@ -311,8 +311,5 @@
   }
 
   /* ---------- header ---------- */
-  function header(){
-    $('#hdr').innerHTML=`<div class="wrap"><a class="brand" href="#"><span class="lv">${LV}</span><span class="tt">1500 Preguntas<small>VAMOS A PRACTICAR · GRAMÁTICA + VOCABULARIO</small></span></a></div>`;
-  }
-  header(); route();
+  route();
 })();

@@ -187,3 +187,11 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
 @media (max-width:760px){.tgrid{grid-template-columns:repeat(10,1fr)}.tq{font-size:18.5px}.tcard{padding:18px}.tcard .opt .k{display:none}}
 .tgrid{grid-template-columns:repeat(10,1fr)}
+
+/* level badge (no header/footer) */
+.lvtop{padding-top:22px}
+.lvbadge{display:inline-block;background:var(--red);color:#fff;font-weight:800;border-radius:12px;padding:6px 14px;font-size:18px;letter-spacing:.5px;text-decoration:none;box-shadow:0 2px 8px rgba(179,38,30,.25)}
+.lvbadge:hover{background:#951e17}
+.hero{padding-top:14px}
+.qhead{padding-top:12px}
+.qcard{scroll-margin-top:20px}
