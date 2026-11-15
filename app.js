@@ -312,9 +312,7 @@
 
   /* ---------- header ---------- */
   function header(){
-    const lv=CFG.levels.map(l=>`<a href="${l.url}" class="${l.code===LV?'on':''}">${l.code}</a>`).join('');
-    const sel=`<select class="lvsel" onchange="location.href=this.value">${CFG.levels.map(l=>`<option value="${l.url}" ${l.code===LV?'selected':''}>${l.code}</option>`).join('')}</select>`;
-    $('#hdr').innerHTML=`<div class="wrap"><a class="brand" href="#"><span class="lv">${LV}</span><span class="tt">1500 Preguntas<small>VAMOS A PRACTICAR · GRAMÁTICA + VOCABULARIO</small></span></a><nav class="levels">${lv}</nav>${sel}</div>`;
+    $('#hdr').innerHTML=`<div class="wrap"><a class="brand" href="#"><span class="lv">${LV}</span><span class="tt">1500 Preguntas<small>VAMOS A PRACTICAR · GRAMÁTICA + VOCABULARIO</small></span></a></div>`;
   }
   header(); route();
 })();
